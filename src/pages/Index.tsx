@@ -31,7 +31,7 @@ const Index = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      // In a real app, this would be your FastAPI backend URL
+      // FastAPI backend URL
       const API_URL = 'http://localhost:8000';
       
       const response = await fetch(`${API_URL}/upload`, {
@@ -43,54 +43,24 @@ const Index = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // Mock response for demo - replace with actual API response handling
-      setTimeout(() => {
-        const mockResults: PredictionResult = {
-          original_data: Array.from({ length: 100 }, (_, i) => ({
-            year: 2015 + Math.floor(Math.random() * 8),
-            manufacturer: ['Toyota', 'Honda', 'Ford', 'BMW', 'Mercedes'][Math.floor(Math.random() * 5)],
-            type: ['sedan', 'SUV', 'truck', 'coupe'][Math.floor(Math.random() * 4)],
-            condition: ['excellent', 'good', 'fair'][Math.floor(Math.random() * 3)],
-            odometer: Math.floor(Math.random() * 150000) + 10000,
-            fuel: 'gas',
-            transmission: 'automatic',
-            size: 'mid-size',
-            cylinders: '6 cylinders'
-          })),
-          predictions: Array.from({ length: 100 }, () => Math.floor(Math.random() * 40000) + 10000),
-          processing_time: 2.34,
-          filename: file.name
-        };
-        setResults(mockResults);
-        setIsProcessing(false);
-        
-        toast({
-          title: "Processing Complete!",
-          description: `Successfully predicted prices for ${mockResults.predictions.length} vehicles.`,
-        });
-      }, 3000);
+      // Parse the actual response from the FastAPI backend
+      const apiResults = await response.json();
+      
+      setResults(apiResults);
+      setIsProcessing(false);
+      
+      toast({
+        title: "Processing Complete!",
+        description: `Successfully predicted prices for ${apiResults.predictions.length} vehicles.`,
+      });
     } catch (error) {
       console.error('Error uploading file:', error);
       setIsProcessing(false);
       
-      // For demo, still show mock results even if API fails
-      const mockResults: PredictionResult = {
-        original_data: Array.from({ length: 50 }, (_, i) => ({
-          year: 2015 + Math.floor(Math.random() * 8),
-          manufacturer: ['Toyota', 'Honda', 'Ford'][Math.floor(Math.random() * 3)],
-          type: ['sedan', 'SUV', 'truck'][Math.floor(Math.random() * 3)],
-          condition: ['excellent', 'good', 'fair'][Math.floor(Math.random() * 3)],
-          odometer: Math.floor(Math.random() * 150000) + 10000,
-        })),
-        predictions: Array.from({ length: 50 }, () => Math.floor(Math.random() * 40000) + 10000),
-        processing_time: 1.85,
-        filename: file.name
-      };
-      setResults(mockResults);
-      
       toast({
-        title: "Demo Mode",
-        description: "Showing sample results (connect to your FastAPI backend for real predictions).",
+        title: "Error",
+        description: "Failed to process the file. Please check your backend connection and try again.",
+        variant: "destructive",
       });
     }
   };
